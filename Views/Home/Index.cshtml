@@ -1,0 +1,36 @@
+﻿@{
+    ViewBag.Title = "DashBoard";
+}
+<link href="@Url.Content("~/CSS/Dashboard.css")" rel="stylesheet" type="text/css" />
+
+<div class="container">
+    <h2 class="pageTitle">My dashboard<span>.</span></h2>
+    <h3 class="userWelcome">Welcome <span class="userName">@Session["UserName"].ToString()</span>! <span class="dateToDay">Today is @DateTime.Now.ToLongDateString()</span> </h3>
+
+</div>
+<div class="container">
+    <h3>Overview</h3>
+    <div class="row">
+        <div class="workingCard col-md-4">
+            <h2>WORKING</h2>
+            <div>
+                <center><h1>@ViewBag.Working</h1></center>
+            </div>
+            <br />
+        </div>
+        <div class="notWorkingCard col-md-4">
+            <h2>Not Working</h2>
+            <div>
+                <center><h1>@ViewBag.NotWorking</h1></center>
+            </div>
+            <br />
+        </div>
+        <div class="disposalCard col-md-4">
+            <h2>For Disposal</h2>
+            <div>
+                <center><h1>@ViewBag.Disposal</h1></center>
+            </div>
+            <br />
+        </div>
+    </div> 
+</div>

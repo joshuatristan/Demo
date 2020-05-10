@@ -1,0 +1,319 @@
+﻿@model List<DukeInventorySysem.Models.Entity.User>
+@{
+    ViewBag.Title = "Users";
+    var grid = new WebGrid(canPage: true, rowsPerPage: 10, canSort: true);
+    grid.Bind(Model,autoSortAndPage:  true);
+}
+
+<link href="@Url.Content("~/CSS/Users.css")" rel="stylesheet" type="text/css" />
+<div class="container">
+    <h2 class="pageTitle">User management<span>.</span></h2>
+</div>
+<div class="container" id="tableDiv">
+    <br />
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#newUserModal">New User</button>
+    <button type="button" class="btn btn-primary toggles" data-toggle="modal" id="editToggle" data-target="#updateUserModal"></button>
+    <button type="button" class="btn btn-primary toggles" data-toggle="modal" id="changePasswordToggle" data-target="#changePasswordModal"></button>
+    <br />
+    <br />
+    @using (Html.BeginForm("Users","Users", "get"))
+    {
+        <div class="pull-right searchBar">
+            <div class="form-group">
+                <ul class="searchControl">
+                    <li><input type="text" name="searchString" class="form-control" placeholder="Search" /></li>
+                    <li><input type="submit" class="btn btn-primary btnSearch" value="Search" /> </li>
+                </ul>
+            </div>
+        </div>
+    }
+    <div>
+        <p class="text-left text-muted">@ViewBag.SearchString</p>
+    </div>
+    @grid.GetHtml(
+       tableStyle: "table table-responsive table-striped ",
+       headerStyle: "thead-dark",
+       columns: grid.Columns(
+        grid.Column(header: "Username", format: @<text><div class="edit" data-id="@item.UserID" propertyName="UserName">@item.UserName</div></text>),
+grid.Column(header: "Password", format: @<text><div class="edit" data-id="@item.UserID" propertyName="Password">@item.Password</div></text>),
+grid.Column(header: "First Name", format: @<text><div class="edit" data-id="@item.UserID" propertyName="FirstName">@item.FirstName</div></text>),
+grid.Column(header: "Last Name", format:@<text><div class="edit" data-id="@item.UserID" propertyName="LastName">@item.LastName</div></text>),
+grid.Column(header: "Email Address", format:@<text><div class="edit" data-id="@item.UserID" propertyName="EmailAddress">@item.EmailAddress</div></text>),
+grid.Column(header: "Actions", format:@<div>
+            @Ajax.ActionLink("Edit", "GetUser", new { Id = item.UserID }, new AjaxOptions() { OnSuccess = "GetUserSuccess", HttpMethod = "get" }, new { @class = "btn btn-primary" })
+            <span> </span>
+            @Ajax.ActionLink("Change Password", "GetUserId", new { Id = item.UserID }, new AjaxOptions() { OnSuccess = "GetUserIdSuccess", HttpMethod = "get", Confirm = "Are you sure you want to change password?" }, new { @class = "btn btn-success" })
+
+            <span> </span>
+            @Ajax.ActionLink("Delete", "DeleteUser", new { Id = item.UserID }, new AjaxOptions() { OnSuccess = "DeleteSuccess", OnFailure = "DeleteFailed", HttpMethod = "delete", Confirm = "Are you sure you want to delete " + item.UserName + "?" }, new { @class = "btn btn-danger" })
+        </div>  )
+  )
+  )
+
+
+
+
+    <div class="modal fade" data-backdrop="static" id="newUserModal" data-toggle="modal">
+        <div class="modal-dialog modal-dialog-centered" role="form">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h5 class="modal-title">Add New User</h5>
+                </div>
+                <div class="modal-body">
+
+                    @using (Ajax.BeginForm("AddUser", new AjaxOptions() { OnSuccess = "fnSuccess", OnFailure = "fnFailure" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="form-group">
+                            <label for="inputFirstName">First Name</label>
+                            <input type="text" name="FirstName" required class="form-control" id="inputFirstName" placeholder="Enter first name">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputLastName">Last Name</label>
+                            <input type="text" name="LastName" required class="form-control" id="inputLastName" placeholder="Enter last name">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputEmailAdd">Email Address</label>
+                            <input type="email" name="EmailAddress" aria-describedby="emailHelp" required class="form-control" id="inputEmailAdd" placeholder="Enter email address">
+                            <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputUserName">Username</label>
+                            <input type="text" name="UserName" required class="form-control" id="inputUserName" placeholder="Enter username">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputPassword" id="passwordLabel">Password</label>
+                            <input type="password" name="Password" required class="form-control" id="inputPassword" placeholder="Enter password">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputConfPassword" id="confirmPasswordLabel">Confirm Password</label>
+                            <input type="password" aria-describedby="passwordError" name="retypePassword" required class="form-control" id="inputConfPassword" placeholder="Confirm your password">
+                        </div>
+                        <div class="alert alert-danger" id="passwordError" role="alert">
+
+                        </div>
+
+                        <button id="formSubmit" type="submit" class="btn btn-primary">Add User</button>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" data-backdrop="static" id="updateUserModal" data-toggle="modal">
+        <div class="modal-dialog modal-dialog-centered" role="form">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h5 class="modal-title">Edit User</h5>
+                </div>
+                <div class="modal-body">
+                    @using (Ajax.BeginForm("UpdateUser", new AjaxOptions() { OnSuccess = "UpdateSuccess", OnFailure = "UpdateFailed", HttpMethod = "patch" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="form-group">
+                            <label for="inputFirstName">First Name</label>
+                            <input type="text" name="FirstName" required class="form-control" id="editFirstName" placeholder="Enter first name">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputLastName">Last Name</label>
+                            <input type="text" name="LastName" required class="form-control" id="editLastName" placeholder="Enter last name">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputEmailAdd">Email Address</label>
+                            <input type="email" name="EmailAddress" aria-describedby="emailHelp" required class="form-control" id="editEmailAdd" placeholder="Enter email address">
+                            <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputUserName">Username</label>
+                            <input type="text" name="UserName" required class="form-control" id="editUserName" placeholder="Enter username">
+                        </div>
+                        <input type="text" hidden name="UserID" required class="form-control" id="editUserID">
+                        <div class="alert alert-danger" id="editUserError" role="alert">
+
+                        </div>
+
+                        <button id="editSubmit" type="submit" class="btn btn-primary">Add User</button>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" data-backdrop="static" id="changePasswordModal" data-toggle="modal">
+        <div class="modal-dialog modal-dialog-centered" role="form">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h5 class="modal-title">Edit User</h5>
+                </div>
+                <div class="modal-body">
+                    @using (Ajax.BeginForm("ChangePassword", new AjaxOptions() { OnSuccess = "ChangePasswordSuccess", OnFailure = "ChangePasswordFailed", HttpMethod = "post" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="form-group">
+                            <label for="changePassword">Old Password</label>
+                            <input type="password" name="Password" required class="form-control" id="changePassword" placeholder="Enter Old Password">
+                        </div>
+                        <div class="form-group">
+                            <label for="changeNewPassword">New Password</label>
+                            <input type="password" name="NewPassword" required class="form-control" id="changeNewPassword" placeholder="Enter Old Password">
+                        </div>
+                        <div class="form-group">
+                            <label for="changeConfirmPassword">Confirm Password</label>
+                            <input type="password" name="ConfirmPassword" required class="form-control" id="changeConfirmPassword" placeholder="Enter Old Password">
+                        </div>
+                        <input type="text" hidden name="UserID" required class="form-control" id="changeUserID">
+                        <div class="alert alert-danger" id="changePasswordError" role="alert">
+                        </div>
+                        <button id="editSubmit" type="submit" class="btn btn-primary">Change Password</button>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script>
+        const password = document.getElementById("inputPassword");
+        const confirmPassword = document.getElementById("inputConfPassword");
+        const userName = document.getElementById("inputUserName");
+        const errorText = document.getElementById("passwordError");
+        const editToggle = document.getElementById("editToggle");
+        const editUserError = document.getElementById("editUserError");
+        const editUserName = document.getElementById("editUserName");
+
+        const changePassword = document.getElementById("changePassword");
+        const changeNewPassword = document.getElementById("changeNewPassword");
+        const changeConfirmPassword = document.getElementById("changeConfirmPassword");
+        const changePasswordError = document.getElementById("changePasswordError");
+        const changeUserID = document.getElementById("changeUserID");
+
+
+        errorText.style.visibility = 'hidden';
+        editUserError.style.visibility = 'hidden';
+        changePasswordError.style.visibility = 'hidden';
+        function fnSuccess(data) {
+            console.log(data);
+            if (data == "ok") {
+                alert("New User Added!");
+                document.forms[0].reset();
+                errorText.style.visibility = 'hidden';
+                location.reload(true);
+            }
+            else {
+                if (data.includes("Password")) {
+                    password.style.border = "1px solid red";
+                    confirmPassword.style.border = "1px solid red";
+                }
+                else {
+                    password.style.border = "";
+                    confirmPassword.style.border = "";
+                }
+                if (data.includes("Username")) {
+                    userName.style.border = "1px solid red";
+                }
+                else {
+                    userName.style.border = "";
+                }
+                errorText.innerHTML = data;
+                errorText.style.visibility = 'visible';
+            }
+        }
+        function fnFailure(err) {
+            console.log(err);
+            alert("error!");
+        }
+
+        function DeleteSuccess(data) {
+            if (data === "ok") {
+                location.reload(true);
+            }
+            else {
+                alert(data);
+            }
+        }
+
+        function GetUserSuccess(data) {
+            editToggle.click();
+            console.log(data);
+            $('#editFirstName').val(data.FirstName);
+            $('#editLastName').val(data.LastName);
+            $('#editEmailAdd').val(data.EmailAddress);
+            $('#editUserName').val(data.UserName);
+            $('#editUserID').val(data.UserID);
+        }
+
+        function UpdateSuccess(data) {
+            if (data === "ok") {
+                editUserError.style.visibility = 'hidden';
+                editUserName.style.border = "1px solid black";
+                location.reload(true);
+            }
+            else {
+
+                editUserError.style.visibility = 'visible';
+                editUserError.innerHTML = data;
+                editUserName.style.border = "1px solid red";
+
+            }
+        }
+
+        function UpdateFailed(err) {
+            alert(err);
+        }
+
+        function GetUserIdSuccess(data) {
+            changeUserID.value = data;
+            $('#changePasswordToggle').click();
+        }
+
+        function ChangePasswordSuccess(data) {
+            if (data == "ok") {
+                alert("password changed!");
+                changePassword.style.border = "";
+                changeNewPassword.style.border = "";
+                changeConfirmPassword.style.border = "";
+                changePasswordError.style.visibility = 'hiddern';
+                location.reload(true);
+            }
+            else {
+                changePassword.style.border = "";
+                changeNewPassword.style.border = "";
+                changeConfirmPassword.style.border = "";
+                changePasswordError.innerHTML = data;
+                changePasswordError.style.visibility = 'visible';
+                if (data.includes("Wrong old password")) {
+                    changePassword.style.border = "1px solid red";
+                }
+                if (data.includes("8 characters")) {
+                    changeNewPassword.style.border = "1px solid red";
+                }
+                if (data.includes("doesn't match")) {
+                    changeNewPassword.style.border = "1px solid red";
+                    changeConfirmPassword.style.border = "1px solid red";
+                }
+
+                
+            }
+        }
+
+
+
+    </script>
+}
+
+

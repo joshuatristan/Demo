@@ -1,0 +1,83 @@
+﻿.pageTitle
+{
+    font-size: 2.7rem;
+    font-weight:normal;
+}
+
+    .pageTitle span {
+        color: #4cd964;
+
+    }
+
+.userWelcome {
+    font-weight: bold;
+    font-size: 1.9rem;
+}
+
+.userName {
+    font-size: 1.7rem;
+    font-weight: lighter;
+    color: #007aff !important;
+}
+
+.dateToDay {
+    font-size: 1.5rem;
+    font-weight: lighter !important;
+}
+
+.workingCard {
+    background-color: #259b24;
+}
+.workingCard h2{
+    color:white;
+    font-weight:bold;
+    font-size:1.8rem;
+}
+.workingCard div center h1{
+    font-weight:bold;
+    font-size:3.8rem;
+    color:white !important;
+}
+
+
+.notWorkingCard {
+    background-color: #e51c23;
+}
+
+    .notWorkingCard h2 {
+        color: white;
+        font-weight: bold;
+        font-size: 1.8rem;
+    }
+
+    .notWorkingCard div center h1 {
+        font-weight: bold;
+        font-size: 3.8rem;
+        color: white !important;
+    }
+
+.disposalCard {
+    background-color: #ff9800;
+}
+
+    .disposalCard h2 {
+        color: white;
+        font-weight: bold;
+        font-size: 1.8rem;
+    }
+
+    .disposalCard div center h1 {
+        font-weight: bold;
+        font-size: 3.8rem;
+        color: white !important;
+    }
+
+.viewMore{
+  transition: 0.2s ease-in-out;
+}
+    .viewMore:hover {
+        color: white !important;
+        background-color: #007aff;
+        border: 0.5px solid white;
+        transition: 0.1s ease-in-out;
+    }

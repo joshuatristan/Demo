@@ -1,0 +1,57 @@
+﻿.title{
+    color:blue !important;
+}
+
+.body{
+    background-color:blueviolet;
+}
+
+.mainContainer { 
+    text-align:center;
+    margin-top:15%;
+}
+
+.wrapper {
+    
+    align-content: center;
+    display: inline-block;  
+}
+
+.loginForm{
+    margin:0 auto;
+}
+
+.headingText{
+    font-size:2.5rem;
+    text-align:center;
+}
+
+.textBox{
+    margin:0 auto;
+    width:2000px;
+}
+
+.inputLabel{
+    font-size:1.4rem;
+    font-weight:lighter;
+}
+
+.btnSubmit {
+    background-color: #007aff !important;
+    border: none;
+    width: 10rem;
+    font-weight: lighter;
+    font-size: 1.4rem;
+    height: 4rem;
+    transition: 0.1s ease-in-out;
+}
+
+.btnSubmit:hover{
+    background-color:black !important;
+    transition: 0.2s ease-in-out;
+
+}
+
+.text-danger{
+    color:red !important;
+}

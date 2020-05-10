@@ -1,0 +1,37 @@
+﻿
+@{
+    ViewBag.Title = "Login";
+
+}
+
+<link href="@Url.Content("~/CSS/Login.css")" rel="stylesheet" type="text/css" />
+
+<div class="container mainContainer">
+    <div class="wrapper">
+        <form action="Verify" method="post" class="loginForm">
+            <h3 class="headingText">Please login to your account</h3>
+            <br />
+            <div class="form-group">
+                <label class="inputLabel" for="userName">Username</label>
+                <input class="form-control textBox" autocomplete="off" placeholder="Enter username"   type="text" id="userName" name="userName" required />
+            </div>
+            <div class="form-group">
+                <label class="inputLabel" for="password">Password</label>
+                <input class="form-control textBox" type="password" id="password" name="password" placeholder="Enter password" required />
+                @if (ViewBag.Message != null)
+                {
+                    <br />
+                    <div class="alert alert-danger errorText" role="alert">
+                        @ViewBag.Message
+                    </div>
+                   
+                }
+            </div>
+            <button type="submit" class="btn btn-primary btnSubmit">Login</button>
+        </form>
+
+
+
+
+    </div>
+</div>

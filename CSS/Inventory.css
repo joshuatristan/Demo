@@ -1,0 +1,34 @@
+﻿.pageTitle {
+    font-size: 2.7rem;
+    font-weight: normal;
+}
+
+    .pageTitle span {
+        color: #4cd964;
+    }
+
+.modal-title {
+    font-weight: bold !important;
+}
+
+#editToggle {
+    visibility: collapse !important;
+}
+
+#editUserID {
+    visibility: collapse !important;
+}
+
+
+
+.searchControl {
+    display: inline-flex;
+}
+
+    .searchControl li {
+        list-style: none;
+    }
+
+.btnSearch {
+    margin-left: 10px !important;
+}

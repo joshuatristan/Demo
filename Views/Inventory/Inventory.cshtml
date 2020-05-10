@@ -1,0 +1,332 @@
+﻿@model IEnumerable<DukeInventorySysem.Models.Entity.Asset>
+
+@{
+    ViewBag.Title = "Inventory";
+    var grid = new WebGrid(canPage: true, rowsPerPage: 10, canSort: true);
+    grid.Bind(Model);
+}
+
+<link href="@Url.Content("~/CSS/Inventory.css")" rel="stylesheet" type="text/css" />
+<div class="container">
+    <h2 class="pageTitle">Equipment management<span>.</span></h2>
+</div>
+<div class="container" id="tableDiv">
+    <br />
+    <button type="button" class="btn btn-primary" data-toggle="modal" id="editsToggle" data-target="#newAssetModal">New Asset</button>
+    <button type="button" class="btn btn-primary" data-toggle="modal" id="editToggle" data-target="#editAssetModal"></button>
+    <br />
+    <br />
+    @using (Html.BeginForm("Inventory", "Inventory", "post"))
+    {
+        <div class="pull-right searchBar">
+            <div class="form-group">
+                <ul class="searchControl">
+                    <li><input type="text" name="searchString" class="form-control" placeholder="Search" /></li> 
+                    <li><input type="submit" class="btn btn-primary btnSearch" value="Search" /> </li>
+                </ul>
+            </div>
+        </div>
+    }
+    <div>
+        <p class="text-left text-muted">@ViewBag.SearchString</p>
+    </div>
+    @grid.GetHtml(
+       tableStyle: "table table-responsive table-striped ",
+       headerStyle: "thead-dark",
+       columns: grid.Columns(
+        grid.Column(header: "Asset/Serial", format: @<text><div data-id="@item.AssetOrSerialNumber" propertyName="AssetOrSerialNumber">@item.AssetOrSerialNumber</div></text>),
+grid.Column(header: "Item Description", format: @<text><div data-id="@item.ItemDescription" propertyName="ItemDescription">@item.ItemDescription</div></text>),
+grid.Column(header: "Item Type", format:@<text><div data-id="@item.ItemType" propertyName="ItemType">@item.ItemType</div></text>),
+grid.Column(header: "Location", format:@<text><div data-id="@item.EquipmentLocation" propertyName="EquipmentLocation">@item.EquipmentLocation</div></text>),
+grid.Column(header: "Harware Specs", format:@<text><div data-id="@item.HardwareSpecs" propertyName="HardwareSpecs">@item.HardwareSpecs</div></text>),
+grid.Column(header: "Condition", format:@<text><div data-id="@item.Condition" propertyName="Condition">@item.Condition</div></text>),
+grid.Column(header: "Remarks", format:@<text><div data-id="@item.Remarks" propertyName="Remarks">@item.Remarks</div></text>),
+grid.Column(header: "Quantity", format:@<text><div data-id="@item.Quantity" propertyName="Quantity">@item.Quantity</div></text>),
+grid.Column(header: "AccountedTo", format:@<text><div data-id="@item.AccountedTo" propertyName="AccountedTo">@item.AccountedTo</div></text>),
+grid.Column(header: "DateOfPurchase", format:@<text><div data-id="@item.DateOfPurchase" propertyName="DateOfPurchase">@item.DateOfPurchase</div></text>),
+grid.Column(header: "Actions", format:@<div>
+            @Ajax.ActionLink("Edit", "GetAsset", new { Id = item.AssetOrSerialNumber }, new AjaxOptions() { OnSuccess = "GetAssetSuccess", HttpMethod = "get" }, new { @class = "btn btn-primary" })
+            <span> </span>
+            @Ajax.ActionLink("Delete", "DeleteAsset", new { Id = item.AssetOrSerialNumber }, new AjaxOptions() { OnSuccess = "DeleteSuccess", OnFailure = "DeleteFailed", HttpMethod = "delete", Confirm = "Are you sure you wan to delete " + item.ItemDescription + "?" }, new { @class = "btn btn-danger" })
+        </div>)
+)
+)
+    <div class="modal fade" data-backdrop="static" id="newAssetModal" data-toggle="modal">
+        <div class="modal-dialog modal-dialog-centered" role="form">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h5 class="modal-title">Add new asset</h5>
+                </div>
+                <div class="modal-body">
+
+                    @using (Ajax.BeginForm("NewAsset", null, new AjaxOptions() { OnSuccess = "NewAssetSuccess", OnFailure = "NewAssetFailed" }, new { }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="form-group">
+                            <label for="inputFirstName">Serial or Asset Id</label>
+                            <input type="text" name="AssetOrSerialNumber" required class="form-control" id="txtAssetNumber" placeholder="Enter serial number or generate">
+                            <br />
+                            @Ajax.ActionLink("Generate ID", "GenerateAssetNumber", null, new AjaxOptions() { OnSuccess = "GenerateSuccess", HttpMethod = "get" }, new { @class = "btn btn-primary" })
+                        </div>
+                        <div class="form-group">
+                            <label for="txtItemDescription">Item Description</label>
+                            <textarea class="form-control" required name="ItemDescription" id="txtItemDescription" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="cmbItemType">Select Item Type</label>
+                            <select class="form-control" required id="cmbItemType" name="ItemType">
+                                @foreach (var item in ViewData["itemTypes"] as List<DukeInventorySysem.Models.Entity.EquipmentType>)
+                                {
+                                    <option>@item.Type</option>
+                                }
+
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cmbLocation">Select Equipment Location</label>
+                            <select class="form-control" required id="cmbLocation" name="EquipmentLocation">
+                                @foreach (var item in ViewData["locations"] as List<DukeInventorySysem.Models.Entity.Location>)
+                                {
+                                    <option>@item.EquipmentLocation</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="txtHardwareSpecs">Hardware Specification</label>
+                            <textarea class="form-control" required name="HardwareSpecs" id="txtHardwareSpecs" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="cmbCondition">Select Equipment Condition</label>
+                            <select class="form-control" required id="cmbCondition" name="Condition">
+                                @foreach (var item in ViewData["conditions"] as List<DukeInventorySysem.Models.Entity.EquipmentCondition>)
+                                {
+                                    <option>@item.Condition</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="txtRemarks">Remarks</label>
+                            <textarea class="form-control" name="Remarks" id="txtRemarks" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="txtQuantity">Quantity</label>
+                            <input type="number" name="Quantity" min="1" required class="form-control" id="txtQuantity" placeholder="Enter Quantity">
+                        </div>
+                        <div class="form-group">
+                            <label for="cmbAccountedTo">Accounted To</label>
+                            <input type="text" name="AccountedTo" required class="form-control" id="cmbAccountedTo" placeholder="Enter Quantity">
+                        </div>
+                        <div class="form-group">
+                            <label for="dtDatePurchase">Date of Purchase</label>
+                            <input type="date"  name="DateOfPurchase" required class="form-control" id="dtDatePurchase" placeholder="Enter Date">
+                        </div>
+                        <div class="alert alert-danger" id="txtError" role="alert">
+
+                        </div>
+                        <button id="formSubmit" type="submit" class="btn btn-primary">Add Asset</button>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" data-backdrop="static" id="editAssetModal" data-toggle="modal">
+        <div class="modal-dialog modal-dialog-centered" role="form">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h5 class="modal-title">Edit Asset</h5>
+                </div>
+                <div class="modal-body">
+
+                    @using (Ajax.BeginForm("UpdateAsset", new AjaxOptions() { OnSuccess = "UpdateAssetSuccess", OnFailure = "UpdateAssetFailed", HttpMethod="patch" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="form-group">
+                            <label for="edittxtAssetNumber">Serial or Asset Id</label>
+                            <input type="text" readonly="readonly" name="AssetOrSerialNumber" required class="form-control" id="edittxtAssetNumber" placeholder="Enter serial number or generate">
+                        </div>
+                        <div class="form-group">
+                            <label for="edittxtItemDescription">Item Description</label>
+                            <textarea class="form-control" required name="ItemDescription" id="edittxtItemDescription" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="editcmbItemType">Select Item Type</label>
+                            <select class="form-control" required id="editcmbItemType" name="ItemType">
+                                @foreach (var item in ViewData["itemTypes"] as List<DukeInventorySysem.Models.Entity.EquipmentType>)
+                                {
+                                    <option>@item.Type</option>
+                                }
+
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editcmbLocation">Select Equipment Location</label>
+                            <select class="form-control" required id="editcmbLocation" name="EquipmentLocation">
+                                @foreach (var item in ViewData["locations"] as List<DukeInventorySysem.Models.Entity.Location>)
+                                {
+                                    <option>@item.EquipmentLocation</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edittxtHardwareSpecs">Hardware Specification</label>
+                            <textarea class="form-control" required name="HardwareSpecs" id="edittxtHardwareSpecs" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="editcmbCondition">Select Equipment Condition</label>
+                            <select class="form-control" required id="editcmbCondition" name="Condition">
+                                @foreach (var item in ViewData["conditions"] as List<DukeInventorySysem.Models.Entity.EquipmentCondition>)
+                                {
+                                    <option>@item.Condition</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edittxtRemarks">Remarks</label>
+                            <textarea class="form-control" name="Remarks" id="edittxtRemarks" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="edittxtQuantity">Quantity</label>
+                            <input type="number" name="Quantity" min="1" required class="form-control" id="edittxtQuantity" placeholder="Enter Quantity">
+                        </div>
+                        <div class="form-group">
+                            <label for="editcmbAccountedTo">Accounted To</label>
+                            <input type="text" name="AccountedTo" required class="form-control" id="editcmbAccountedTo" placeholder="Enter Quantity">
+                        </div>
+                        <div class="form-group">
+                            <label for="editdtDatePurchase">Date of Purchase</label>
+                            <input type="date" name="DateOfPurchase" required class="form-control" id="editdtDatePurchase" placeholder="Enter Date">
+                        </div>
+                        <button id="formSubmit" type="submit" class="btn btn-primary">Add Asset</button>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+</div>
+
+@section scripts{
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script>
+        const txtAssetNumber = document.getElementById('txtAssetNumber');
+        const txtItemDescription = document.getElementById('txtItemDescription');
+        const cmbItemType = document.getElementById('cmbItemType');
+        const cmbLocation = document.getElementById('cmbLocation');
+        const txtHardwareSpecs = document.getElementById('txtHardwareSpecs');
+        const cmbCondition = document.getElementById('cmbCondition');
+        const txtRemarks = document.getElementById('txtRemarks');
+        const txtQuantity = document.getElementById('txtAssetNumber');
+        const cmbAccountedTo = document.getElementById('cmbAccountedTo');
+        const dtDatePurchase = document.getElementById('dtDatePurchase');
+        const txtError = document.getElementById('txtError');
+
+        const edittxtAssetNumber = document.getElementById('edittxtAssetNumber');
+        const edittxtItemDescription = document.getElementById('edittxtItemDescription');
+        const editcmbItemType = document.getElementById('editcmbItemType');
+        const editcmbLocation = document.getElementById('editcmbLocation');
+        const edittxtHardwareSpecs = document.getElementById('edittxtHardwareSpecs');
+        const editcmbCondition = document.getElementById('editcmbCondition');
+        const edittxtRemarks = document.getElementById('edittxtRemarks');
+        const edittxtQuantity = document.getElementById('edittxtQuantity');
+        const editcmbAccountedTo = document.getElementById('editcmbAccountedTo');
+        const editdtDatePurchase = document.getElementById('editdtDatePurchase'); 
+        const editToggle = document.getElementById('editToggle'); 
+        txtError.style.visibility = 'hidden';  
+
+         
+        function NewAssetSuccess(data) {
+            if (data == "ok") {
+                txtError.style.visibility = 'hidden';
+                txtAssetNumber.style.border = "";
+                document.forms[0].reset();
+                location.reload(true);
+                alert("Asset added");
+            }
+            else {
+                txtError.style.visibility = 'visible';
+                txtAssetNumber.style.border = "1px solid red";
+                txtError.innerHTML = data;
+            }
+        }
+        function NewAssetFailed(err) {
+            alert(err);
+        }
+        function GenerateSuccess(data) {
+            if (txtAssetNumber.value == "" || txtAssetNumber.value == null) {
+                txtAssetNumber.value = data;
+            }
+        }
+        function DeleteSuccess(data) {
+            if (data === "ok") {
+                location.reload(true);
+            }
+            else {
+                alert(data);
+            }
+        }
+        function DeleteFailed(err) {
+            alert(err);
+        }
+        function GetDateFormat(date) {
+            var month = (date.getMonth() + 1).toString();
+            month = month.length > 1 ? month : '0' + month;
+            var day = date.getDate().toString();
+            day = day.length > 1 ? day : '0' + day;
+            return date.getFullYear() + '-' + month + '-' + day;
+        }
+        function GetAssetSuccess(data) { 
+            if (data === "not found") {
+                alert("record not found!");
+            }
+            else {
+                 
+                edittxtAssetNumber.value = data.AssetOrSerialNumber;
+                edittxtItemDescription.value = data.ItemDescription;
+                editcmbItemType.value = data.ItemType;
+                editcmbLocation.value = data.EquipmentLocation;
+                edittxtHardwareSpecs.value = data.HardwareSpecs
+                editcmbCondition.value = data.Condition;
+                edittxtRemarks.value = data.Remarks;
+                edittxtQuantity.value = data.Quantity;
+                editcmbAccountedTo.value = data.AccountedTo;
+                var newDate = new Date(parseJsonDate(data.DateOfPurchase))
+                var formattedDate = new Date(((newDate.getMonth() > 8) ? (newDate.getMonth() + 1) : ('0' + (newDate.getMonth() + 1))) + '/' + ((newDate.getDate() > 9) ? newDate.getDate() : ('0' + newDate.getDate())) + '/' + newDate.getFullYear());
+                let date = JSON.stringify(GetDateFormat(formattedDate))
+                date = date.slice(1, 11); 
+                editdtDatePurchase.value = date;
+                editToggle.click();
+            }
+        }
+        function parseJsonDate(jsonDateString) {
+            return new Date(parseInt(jsonDateString.replace('/Date(', '')));
+        }
+        function UpdateAssetSuccess(data) {
+            if (data === "ok") {
+                location.reload(true);
+            }
+            else {
+                alert(data);
+            }
+        }
+
+    </script>
+
+
+
+}
